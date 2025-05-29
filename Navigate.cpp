@@ -8,38 +8,18 @@
 //#include <cmath>
 
 
-
-
-//0-right, 1-left, dir- direction of wall, inDir- direction of new wall
-//דרגת סיבוב שנותרה לאחר שהוא הסתובב כבר 90 או 270
-//double roundDegrees(bool dir, bool inDir, double angel) {
-//	if (angel > 90)//לא אמור לקרות..ליתר בטחון
-//		angel = abs(angel - 180);
-//	if (inDir == 0)// right- right or left-right
-//		return angel;
-//	if (inDir == 1)//righr-left or left-left
-//		return -angel;
-//	else
-//		return 0;
-//}
-
-
-
-
-
-
-void turnTo(double angel) {
+static void turnTo(float angel) {
 	//
 }
 
-void goTo(double x, double y, double z) {
+static void goTo(float x, float y, float z) {
 	//	
 }
-void goTo(double dist) {
+static void goTo(float dist) {
 	//	
 }
 //direction: 0-right. 1-left. 2-ahead.
-void moveToOtherRoom(double dist, Point to, double angel, int direction) {
+static void moveToOtherRoom(float dist, Point to, float angel, int direction) {
 	//פנה כבר -90
 	goTo(dist);
 	turnTo(-90);

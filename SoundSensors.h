@@ -3,25 +3,25 @@ class SoundSensors
 {
 
 	public:
-		double rightLevels;
-		double leftLevels;
-		double range = 100;//only for example!
+		float rightLevels;
+		float leftLevels;
+		float range = 100;//only for example!
 
 		SoundSensors() {
 			rightLevels = 0;
 			leftLevels = 0;
 		}
-		double getRightLevels() {
+		float getRightLevels() {
 			return this->rightLevels;
 
 		}
-		double getLeftLevels() {
+		float getLeftLevels() {
 			return this->leftLevels;
 		}
-		void setRightLevels(double level) {
+		void setRightLevels(float level) {
 			this->rightLevels = level;
 		}
-		void setLeftLevels(double level) {
+		void setLeftLevels(float level) {
 			this->leftLevels = level;
 		}
 	

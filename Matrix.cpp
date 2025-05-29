@@ -1,6 +1,7 @@
 #pragma once
 #include "Matrix.h"
 #include "Vertex.h"
+#include "Stops.cpp"
 
 
 
@@ -13,7 +14,7 @@ void Matrix::initial() {
 		}
 	}
 	Vertex* v0 = new Vertex(0, 30, -1, 0, nullptr);
-	this->changeValue(0, 0, v0);
+	this->changeValue(v0);
 }
 
 void Matrix::addRowUP(int num) {
@@ -66,9 +67,10 @@ int Matrix::findZIndex(int z) {
 	return z;
 }
 //
-void Matrix::changeValue(double x, double z, Vertex* p) {
+
+void Matrix::changeValue( Vertex* p) {
 	// אם אין עדיין מצביע באותו מקום, ניצור חדש
-	int indZ = int(round(z)), indX = int(round(x));
+	int indZ = int(round(p->getPoint().getZ())), indX = int(round(p->getPoint().getX()));
 	if (mat[findZIndex(indZ)][findXIndex(indX)] == nullptr) {
 		mat[findZIndex(indZ)][findXIndex(indX)] = new Vertex(*p); // משכפלת את הערך של p
 	}
@@ -76,17 +78,18 @@ void Matrix::changeValue(double x, double z, Vertex* p) {
 		*(mat[findZIndex(indZ)][findXIndex(indX)]) = *p; // משנה את הערך הקיים
 	}
 }
-Vertex* Matrix::isVisited(double x, double z) {//פונקציה המשתמשת בוקטור כיוונים
+float Matrix::isVisited(float x, float z) {//פונקציה המשתמשת בוקטור כיוונים
 	for (int i = 0; i < 9; i++) {
 		int cx = findXIndex(int(round(x)) + Xdirections[i]);
 		int cz = findZIndex(int(round(z)) + Zdirections[i]);
 
 		Vertex* p = mat[cz][cx];
-		if (p != nullptr)
-			return p;
+		if (p != nullptr && p->getStop() != Stops::KIDNAPPED && p->getStop() != Stops::TERRORIST && p->getStop() != Stops::EXPLOSIVES)
+			return p->getAngel();
 	}
-	return nullptr;
+	return -1;
 }
+
 void Matrix::printMat() {//לבדוק שהתנאים טובים ולא סיבוכיות גדולה מידי!
 	for (int i = rowNum - 1; i >= 0; i--) {
 		cout << "\n";
@@ -123,8 +126,11 @@ void Matrix::deleteMatrix() {
 	mat.clear();
 }
 
+void Matrix::addPeopleVertex(Vertex *p) {
+	this->changeValue(p);
+}
 
-//int Matrix::value(double x, double z) {
-	//	int* ptr = mat[findZIndex(int(round(z)))][findXIndex(int(round(x)))];
-	//	return ptr ? *ptr : -1; 
-	//}
+void Matrix::addWeaponVertex(Vertex *p) {//כרגע אין התייחסות לדריסת קודקודים אחרים
+	this->changeValue(p);
+}
+

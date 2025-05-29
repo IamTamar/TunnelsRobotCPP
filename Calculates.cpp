@@ -8,43 +8,37 @@
 #include <cmath>
 #define PI  3.141592653589793 //pai
 //#include <cmath>
-
-
-double calcSlope(Point p1, Point p2) {
-	double deltaX = p2.getX() - p1.getX();
-	double deltaZ = p2.getZ() - p1.getZ();
+static float calcSlope(Point p1, Point p2) {
+	float deltaX = p2.getX() - p1.getX();
+	float deltaZ = p2.getZ() - p1.getZ();
 
 	if (deltaX == 0) {
 		// קו אנכי - שיפוע אינסופי
-		return std::numeric_limits<double>::infinity();
+		return std::numeric_limits<float>::infinity();
 	}
 
 	return deltaZ / deltaX;
 }
 
-//m1- current m, m2- next m
+// m2- next m
 // מחשבת את הזווית בין שני שיפועים במעלות, עם טיפול במקרים בעייתיים
-static double angelCalc(float m1, float m2) {
-	// בדיקה: אם אחד השיפועים אינסופי (קווים אנכיים)
-	if (isinf(m1) && isinf(m2)) {
-		return 0; // שני הקווים אנכיים → זווית ביניהם היא 0
-	}
-	if (isinf(m1) || isinf(m2) || 1 + m1 * m2 == 0) {
-		return 90; // קו אחד אנכי והשני לא → זווית של 90°
-		// בדיקה: אם המכנה מתאפס בדיוק (מ1*m2 = -1) → או זווית של 90 מעלות 
-	}
-	// חישוב רגיל
-	double tanTheta = abs((m2 - m1) / (1 + m1 * m2));
-	double radians = atan(tanTheta);
-	double degrees = radians * (180.0 / PI);
-	return degrees;
+static float angelCalc(float mainAngel, float m2) {
+	float angelInRad = mainAngel * (PI / 180.0); 	// המרת זווית הרובוט הנוכחית לרדיאנים
+	//  קביעת זווית היעד (הכיוון שאליו הרובוט צריך לפנות) ברדיאנים
+	float newAngel;
+
+	if (isinf(m2))
+		newAngel = PI / 2.0; // 90 מעלות (אנכי)
+	else
+		newAngel = atan(m2); // זווית מה-atan
+
+	float rot_rad = newAngel - angelInRad;	// חישוב ההפרש בין זוויות היעד וההתחלה
+	return (rot_rad * (180.0 / PI)); 		// המרה למעלות
 }
-
-
 
 //0-right, 1-left, dir- direction of wall, inDir- direction of new wall
 //דרגת סיבוב שנותרה לאחר שהוא הסתובב כבר 90 או 270
-double roundDegrees(bool dir, bool inDir, double angel) {
+static float roundDegrees(bool dir, bool inDir, float angel) {
 	if (angel > 90)//לא אמור לקרות..ליתר בטחון
 		angel = abs(angel - 180);
 	if (inDir == 0)// right- right or left-right
@@ -55,8 +49,8 @@ double roundDegrees(bool dir, bool inDir, double angel) {
 		return 0;
 }
 
-static vector<double> avgs(vector<Point> right, vector <Point> left) {
-	double avgRightUp, avgLeftUp, sumRightUp = 0, sumLeftUp = 0, avgRightDown, avgLeftDown, sumRightDown = 0, sumLeftDown = 0;
+static vector<float> avgs(vector<Point> right, vector <Point> left) {
+	float avgRightUp, avgLeftUp, sumRightUp = 0, sumLeftUp = 0, avgRightDown, avgLeftDown, sumRightDown = 0, sumLeftDown = 0;
 
 	for (int i = 0; i < 10; i++)
 	{
@@ -73,22 +67,19 @@ static vector<double> avgs(vector<Point> right, vector <Point> left) {
 	avgRightDown = sumLeftUp / 10;
 	avgLeftDown = sumLeftDown / 10;
 	//מחזיר הפרש של נקודות עליונות ותחתונות , ממוצע ימין עליון וממוצע שמאלי תחתון
-	vector<double> avgs = { abs(avgRightUp - avgRightDown), abs(avgLeftUp - avgLeftDown) , avgRightUp , avgLeftDown };
+	vector<float> avgs = { abs(avgRightUp - avgRightDown), abs(avgLeftUp - avgLeftDown) , avgRightUp , avgLeftDown };
 
 	return avgs;
 }
 
-
-
-
 // ממיר מעלות לרדיאנים
-inline double deg2rad(double degrees) {
+inline float deg2rad(float degrees) {
 	return degrees * PI / 180.0;
 }
 
 // פונקציה שמבצעת סיבוב של וקטור דו-ממדי לפי זווית כוללת
-Eigen::Vector2d rotateVectorByAngle(double x, double z, double theta_degrees) {//כששולחים את הנקודות לפה- זה אמור להיות הנקודה הנוכחית + לידאר
-	double theta_rad = deg2rad(theta_degrees);//המרת מעלות הזוית לרדיאנים
+static Eigen::Vector2d rotateVectorByAngle(float x, float z, float theta_degrees) {//כששולחים את הנקודות לפה- זה אמור להיות הנקודה הנוכחית + לידאר
+	float theta_rad = deg2rad(theta_degrees);//המרת מעלות הזוית לרדיאנים
 
 	Eigen::Matrix2d R;//מטריצת החישובים
 	R << cos(theta_rad), -sin(theta_rad),

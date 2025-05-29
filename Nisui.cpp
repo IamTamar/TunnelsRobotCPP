@@ -4,8 +4,18 @@
 #include <stack>
 #include <vector>
 #include "Matrix.h"
+#include "file.h"
+#include <string.h>
+#include "YoloData.h"
+#include <iostream>
 using namespace std;
-//int main() {
+int main() {
+	File f;
+	//YoloData y;
+	//y.runYoloPrediction();
+	//string s = f.getLastCreatedFile();
+}
+
 //	Vertex v1 = Vertex(1, 1, 30, 30, nullptr);
 //	Vertex v2 = Vertex(-2, -2, 30, 30, &v1);
 //	Vertex v3 = Vertex(2, 10, 30, 0, &v1);

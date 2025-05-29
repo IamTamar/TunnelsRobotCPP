@@ -39,6 +39,15 @@
     <ClInclude Include="SoundSensors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="YoloData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Obstacles2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OccupancyGridBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GasSensors.cpp">
@@ -84,6 +93,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SoundSensors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Obstacles2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OccupancyGridBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AStar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

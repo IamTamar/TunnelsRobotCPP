@@ -6,33 +6,33 @@ using namespace std;
 class Point
 {
 public:
-	double x;
-	double y;
-	double z;
+	float x;
+	float y;
+	float z;
 public:
 	Point() : x(0), y(0), z(0) {} // Default constructor
-	Point(double x, double y, double z) {
+	Point(float x, float y, float z) {
 		this->x = x;
 		this->y = y;
 		this->z = z;
 	}
-	double getX() { return x; }
-	double getY() { return y; }
-	double getZ() { return z; }
-	double changeX(double x) {
+	float getX() { return x; }
+	float getY() { return y; }
+	float getZ() { return z; }
+	float changeX(float x) {
 		this->x += x;
 		return this->x;
 	}
-	double changeY(double y) {
+	float changeY(float y) {
 		this->y += y;
 		return this->y;
 	}
-	double changeZ(double z) {
+	float changeZ(float z) {
 		this->z += z;
 		return this->z;
 	}
 	void printPoint();
-	double pointDirection(Point p_v, Point o_v);
+	float pointDirection(Point p_v, Point o_v);
 };
 
 

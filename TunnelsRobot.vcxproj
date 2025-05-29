@@ -104,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,11 +133,15 @@
     <ClInclude Include="Graph.h" />
     <ClInclude Include="Lidar.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="Obstacles2.h" />
+    <ClInclude Include="OccupancyGridBuilder.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="SoundSensors.h" />
     <ClInclude Include="Vertex.h" />
+    <ClInclude Include="YoloData.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AStar.cpp" />
     <ClCompile Include="Calculates.cpp" />
     <ClCompile Include="file.cpp" />
     <ClCompile Include="GasSensors.cpp" />
@@ -147,6 +152,8 @@
     <ClCompile Include="Navigate.cpp" />
     <ClCompile Include="Nisui.cpp" />
     <ClCompile Include="Obstacles.cpp" />
+    <ClCompile Include="Obstacles2.cpp" />
+    <ClCompile Include="OccupancyGridBuilder.cpp" />
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="SoundSensors.cpp" />
     <ClCompile Include="Stops.cpp" />

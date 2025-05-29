@@ -30,6 +30,9 @@ public:
     Vertex* addVertex(Vertex* newV);
     void addEdge(Vertex* from, Vertex* to);
     void printGraph() const;
+    Vertex* addPeopleVertex();
+    Vertex* addWeaponVertex();
+
 };
 
 
@@ -60,4 +63,3 @@ public:
 //		}
 //	}
 //};
-

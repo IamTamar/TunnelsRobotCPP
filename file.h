@@ -14,8 +14,6 @@ class File
 {
 public:
 	File();
-	string GetWordAfterLastDash(const std::string& sentence);
-	float ExtractLastWordTofloat(const string& sentence);
 	string getLastCreatedFolder();
 	std::string getLastCreatedFile(fs::path folderPath);
 	vector<Point> fileToCoordinatesVector(const std::string& predictionFilePath);

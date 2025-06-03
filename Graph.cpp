@@ -9,16 +9,11 @@ Vertex* Graph::addVertex(Vertex* newV) {
     vertice.push_back(v);
     //if (v->getPrev() != nullptr) 
         v->getPrev()->addNext(v); // הוספה לרשימת ה-next של הקודם    
-    last = v;
+        SetLast(v);
     return v;
 }
 
-void Graph::addEdge(Vertex* from, Vertex* to) {
-    if (from && to) {
-        from->addNext(to);
-        to->prev = from;
-    }
-}
+
 
 void Graph::printGraph() const {
     for (Vertex* v : vertice) {

@@ -8,6 +8,8 @@
 #include <cmath>
 #define PI  3.141592653589793 //pai
 //#include <cmath>
+
+using namespace std;
 static float calcSlope(Point p1, Point p2) {
 	float deltaX = p2.getX() - p1.getX();
 	float deltaZ = p2.getZ() - p1.getZ();
@@ -16,7 +18,7 @@ static float calcSlope(Point p1, Point p2) {
 		// קו אנכי - שיפוע אינסופי
 		return std::numeric_limits<float>::infinity();
 	}
-
+	cout << "slope: " << deltaZ / deltaX << endl;
 	return deltaZ / deltaX;
 }
 
@@ -33,6 +35,7 @@ static float angelCalc(float mainAngel, float m2) {
 		newAngel = atan(m2); // זווית מה-atan
 
 	float rot_rad = newAngel - angelInRad;	// חישוב ההפרש בין זוויות היעד וההתחלה
+	cout << "angel: " << rot_rad * (180.0 / PI) << endl;
 	return (rot_rad * (180.0 / PI)); 		// המרה למעלות
 }
 
@@ -49,9 +52,11 @@ static float roundDegrees(bool dir, bool inDir, float angel) {
 		return 0;
 }
 
-static vector<float> avgs(vector<Point> right, vector <Point> left) {
-	float avgRightUp, avgLeftUp, sumRightUp = 0, sumLeftUp = 0, avgRightDown, avgLeftDown, sumRightDown = 0, sumLeftDown = 0;
-
+static std::vector<float> avgs(const std::vector<Point>& right, const std::vector<Point>& left){
+float avgRightUp, avgLeftUp, sumRightUp = 0, sumLeftUp = 0, avgRightDown, avgLeftDown, sumRightDown = 0, sumLeftDown = 0;
+	if (right.size() < 10 || left.size() < 10) {
+		throw invalid_argument("Both 'right' and 'left' vectors must contain at least 10 points.");
+	}
 	for (int i = 0; i < 10; i++)
 	{
 		sumRightUp += right[i].getX();
@@ -64,7 +69,7 @@ static vector<float> avgs(vector<Point> right, vector <Point> left) {
 	}
 	avgRightUp = sumRightUp / 10;
 	avgLeftUp = sumLeftUp / 10;
-	avgRightDown = sumLeftUp / 10;
+	avgRightDown = sumRightDown / 10;
 	avgLeftDown = sumLeftDown / 10;
 	//מחזיר הפרש של נקודות עליונות ותחתונות , ממוצע ימין עליון וממוצע שמאלי תחתון
 	vector<float> avgs = { abs(avgRightUp - avgRightDown), abs(avgLeftUp - avgLeftDown) , avgRightUp , avgLeftDown };
@@ -78,13 +83,21 @@ inline float deg2rad(float degrees) {
 }
 
 // פונקציה שמבצעת סיבוב של וקטור דו-ממדי לפי זווית כוללת
-static Eigen::Vector2d rotateVectorByAngle(float x, float z, float theta_degrees) {//כששולחים את הנקודות לפה- זה אמור להיות הנקודה הנוכחית + לידאר
+static Eigen::Vector2d rotateVectorByAngle(float x, float z, float theta_degrees) {//כששולחים את הנקודות לפה- זה אמור להיות הנקודת לידאר
 	float theta_rad = deg2rad(theta_degrees);//המרת מעלות הזוית לרדיאנים
-
 	Eigen::Matrix2d R;//מטריצת החישובים
-	R << cos(theta_rad), -sin(theta_rad),
-		sin(theta_rad), cos(theta_rad);
 	Eigen::Vector2d v(x, z);//יצירת וקטור הנקודה
+
+	if (theta_degrees >= 0) {
+		R << cos(theta_rad), sin(theta_rad),
+			-sin(theta_rad), cos(theta_rad);
+	}
+	/*else
+	{
+		R << cos(theta_rad), -sin(theta_rad),
+			sin(theta_rad), cos(theta_rad);
+	}*/
+
 	return R * v;//הכפלת וקטור במטריצה מביאה לנקודות הסופיות
 }
 

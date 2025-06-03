@@ -7,157 +7,188 @@
 #include <fstream>
 #include <sstream>
 #include <string>   
-//#include <cstdlib>
+#include "Graph.h"
+#include "YoloData.h"
+#include "file.h"
+#include "Matrix.h"
+#include <thread>
 using namespace std;
+#include <iostream>
+#include <string>
+#include <set>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <filesystem>
+namespace fs = std::filesystem;
 
-//int main() {
-//    string scriptPath = "C:\\Users\\PC\\Desktop\\python\\givenFromYolo.py";
-//    string imagePath = "C:\\Users\\PC\\Desktop\\python\\datasets\\images\\train\\8.png";
-//    string command = "python \"" + scriptPath + "\" \"" + imagePath + "\"";
-//    system(command.c_str());
-//
-//
-//    ifstream in("result.txt");
-//    int cls;
-//    float conf, x, y, w, h;
-//    while (in >> cls >> conf >> x >> y >> w >> h) {
-//        cout << "category: " << cls << ", confidence: " << conf
-//            << ", center: (" << x << "," << y << "), size: (" << w << "," << h << ")\n";
-//    }
-//
-//    return 0;
-//}
+YoloData::YoloData(Graph* graph, Matrix* mat)
+{
 
-
-bool hasClassInPrediction(const string& predictionFilePath, int targetClassId) {
-    ifstream file(predictionFilePath);
-    if (!file.is_open()) {
-        cerr << "error: " << predictionFilePath << endl;
-        return false;
-    }
-
-    string line;
-    while (getline(file, line)) {
-        istringstream iss(line);
-        int classId;
-        float  x, y, w, h;
-
-        if (!(iss >> classId  >> x >> y >> w >> h)) {
-            cerr << "ilegal line: " << line << endl;
-            continue;
-        }
-
-        // הדפסה לבדיקה
-        std::cout << "class: " << classId << 
-             ", center: (" << x << ", " << y << "), size: (" << w << ", " << h << ")\n";
-
-        if (classId == targetClassId /* && conf >= 0.5 */) {
-            return true; // זיהוי נמצא
-        }
-    }
-
-    return false; // לא נמצא
+    hashFunctions.push_back([this, graph, mat]() { this->addWeapon(graph, mat); });
+    hashFunctions.push_back([this]() { this->isOpening(); });
+    hashFunctions.push_back([this, graph, mat]() { this->addPeople(graph, mat); });
 }
 
+string getBaseFilename(const string& path) {
+    filesystem::path p(path);
+    return p.stem().string();  // לדוגמה: "dog" מתוך "C:\images\dog.jpg"
+}
 
-void runYoloPrediction() {
-    string imagePath = "aa.mp4";//לשנות את הפונקציה שתעבור כל פעם על תמונה בתקיה מסויימת
-    string command = "python C:\\Users\\PC\\Desktop\\python\\givenFromYolo.py \"" + imagePath + "\"";
+vector<int> YoloData::runYoloPrediction(const string& FilePath) {
+    string pythonExe = "C:\\Users\\PC\\Desktop\\python\\env\\Scripts\\python.exe";
+    string scriptPath = "C:\\Users\\PC\\Desktop\\python\\givenFromYolo.py";
+    string command = pythonExe + " " + scriptPath + " " + FilePath;
+
+
+    // הצגת הפקודה
+    cout << "הפקודה שהורכבה: " << command << endl;
     int result = system(command.c_str());
+    this_thread::sleep_for(chrono::milliseconds(50)); // כדי שיספיק לכתוב לקובץ
 
-    if (result != 0) {
+    vector<int> classIDs;
+    if (result != 0) {//קוד 0- הצלחה
         cerr << "Error running Python script!" << endl;
+        return classIDs;
     }
-    else {
-        cout << "Python script ran successfully!" << endl;
+    // יוצר את שם הקובץ מהתמונה
+    string baseName = getBaseFilename(FilePath);
+    string outputFile = "yolo_classes_" + baseName + ".txt";
+    ifstream infile(outputFile);
+    if (!infile) {
+        cerr << "Could not open result file: " << outputFile << endl;
+        return classIDs;
+    }    
+    set<int> uniqueClasses;
+    int cls;
+    while (infile >> cls) {
+        uniqueClasses.insert(cls);
     }
+    // מעתיק את הקלאסים הייחודיים לתוך וקטור
+    classIDs.assign(uniqueClasses.begin(), uniqueClasses.end());
+    return classIDs;
 }
-
-string getPredictionFilePath() {
-    ifstream pathFile("result_path.txt");
-    string path;
-    if (getline(pathFile, path)) {
-        return path;
-    }
-    cerr << "could not read result_path.txt" << endl;
-    return "";
-}
-
-
-//int main() {
-//    string imagePath = "C:\\Users\\PC\\Desktop\\python\\datasets\\images\\test\\91.jpeg";
-//    runYoloPrediction(imagePath);
-//
-//    string txtPath = getPredictionFilePath();
-//    if (txtPath.empty()) return 1;
-//
-//    int targetClass = 0;
-//    if (hasClassInPrediction(txtPath, targetClass)) {
-//        cout << "detected!!!" << endl;
-//    }
-//    else {
-//        cout << "not detected" << endl;
-//    }
-//
-//    return 0;
-//}
-
-
-//int main() {
-//    string labelFilePath = "runs/detect/predict/labels/8.txt";  // או נתיב אחר בהתאם לתמונה שלך
-//    int targetClass = 1;
-//    bool found = false;
-//
-//    ifstream file(labelFilePath);
+//bool YoloData::hasClassInPrediction(const string& predictionFilePath, int targetClassId) {
+//    File f;
+//    ifstream file(predictionFilePath);
 //    if (!file.is_open()) {
-//        cerr << "it can't open: " << labelFilePath << endl;
-//        return 1;
+//        cerr << "error: " << predictionFilePath << endl;
+//        return false;
 //    }
-//
 //    string line;
 //    while (getline(file, line)) {
-//        if (!line.empty()) {
-//            int classId;
-//            istringstream iss(line);
-//            iss >> classId;
+//        istringstream iss(line);
+//        int classId;
+//        float  x, y, w, h;
 //
-//            if (classId == targetClass) {
-//                found = true;
-//                break;
-//            }
+//        if (!(iss >> classId  >> x >> y >> w >> h)) {
+//            cerr << "ilegal line: " << line << endl;
+//            continue;
+//        }
+//
+//        // הדפסה לבדיקה
+//        std::cout << "class: " << classId << 
+//             ", center: (" << x << ", " << y << "), size: (" << w << ", " << h << ")\n";
+//
+//        if (classId == targetClassId /* && conf >= 0.5 */) {
+//            return true; // זיהוי נמצא
 //        }
 //    }
 //
-//    file.close();
-//
-//    if (found)
-//        std::cout << "הקטגוריה נמצאה בתמונה." << std::endl;
-//    else
-//        std::cout << "לא נמצאה קטגוריה מתאימה." << std::endl;
-//
-//    return 0;
+//    return false; // לא נמצא
 //}
 
-//int main() {
-//    string path = "path/to/runs/detect/predict/labels/35.txt";
-//    auto detections = loadDetections(path);
-//
-//    for (const auto& d : detections) {
-//        std::cout << "Class: " << d.cls << ", Confidence: " << d.confidence << std::endl;
-//        std::cout << "BBox center: (" << d.x_center << ", " << d.y_center << "), size: (" << d.width << ", " << d.height << ")\n";
-//    }
-//
-//    return 0;
-//}
+void YoloData::runYolo()
+{
+    std::wstring batchFilePath = L"C:\\Users\\PC\\Downloads\\yolo\\my_yolov8_model2\\content\\runs\\detect\\my_yolov8_model2\\CMD.bat.txt";
 
-//מציאת הנקודה שממנה מתחיל הפתח או הדלת
+    // Build the command to run the batch file
+    std::wstring fullCommand = L"\"";
+    fullCommand += batchFilePath;
+    fullCommand += L"\"";
 
-
-Point peopleOrWeapon(Vertex prev, Vertex next) {
-    double x = prev.getPoint().getX() - next.getPoint().getX();
-    double y = prev.getPoint().getY() - next.getPoint().getY();
-    double z = prev.getPoint().getZ() - next.getPoint().getZ();
-    return Point(x, y, z);
+    // Execute the command to run the batch file
+    _wsystem(fullCommand.c_str());
 }
 
-//{ 0: 'weapon', 1 : 'openings', 2 : 'people' }
+void YoloData::processDirectoryAndReadFiles(Graph* graph, Matrix* mat) {
+    File f;
+    
+    /*fs::path latest_run_folder_path(f.getLastCreatedFolder());
+    fs::path target_labels_path = latest_run_folder_path / "labels";*/
+    string latest_file_str;
+    setonyolo(1);
+    while (Getonyolo()==1) 
+    {
+
+        latest_file_str = f.getLastCreatedFile("C:\\Users\\PC\\Downloads\\TunnelsRobot\\yoloRuns");
+        if (latest_file_str.empty()) {
+            // אם getLastCreatedFile מחזירה מחרוזת ריקה, זה אומר שאין יותר קבצים לטיפול
+            std::cout << "לא נמצאו קבצים נוספים לטיפול. סיום טיפול." << std::endl;
+            break; // יציאה מהלולאה
+        }
+        fs::path latest_file_path(latest_file_str);
+        // וידוא שהקובץ עדיין קיים לפני שמנסים לקרוא אותו 
+        if (!fs::exists(latest_file_path)) {
+            std::cerr << "file " << latest_file_path.filename() << "unexists." << std::endl;
+            continue; // מדלג לאיטרציה הבאה
+        }
+        if (!fs::is_regular_file(latest_file_path)) {
+            std::cerr << "file: " << latest_file_path.filename() << "unregular file" << std::endl;
+            continue;
+        }
+        // קוראים את תוכן הקובץ האחרון שנוצר
+        setFlag(false);
+       
+        this->classes = this->runYoloPrediction(latest_file_str);
+        string baseName = getBaseFilename(latest_file_str);
+        string output_text_file = "yolo_classes_" + baseName + ".txt";
+        for (int index : this->classes) {
+            this->playHash(index);
+        }
+        //  מחיקת הקובץ לאחר הטיפול בו 
+        try {
+            fs::remove(latest_file_path);
+            fs::remove(output_text_file);
+
+        }
+        catch (const fs::filesystem_error& e) {
+            std::cerr << "fatal error - file erasing " << latest_file_path << ": " << e.what() << std::endl;
+            break;
+        }
+        // השהייה קצרה כאן 
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+int YoloData::Getonyolo()
+{
+    std::lock_guard<std::mutex> lock(mtxOnYolo);  // סנכרון של גישה עם lock_guard
+    return onyolo;
+}
+void YoloData::setonyolo( int newValue)
+{
+    std::lock_guard<std::mutex> lock(mtxOnYolo);  // סנכרון של גישה עם lock_guard
+    onyolo = newValue;
+}
+void YoloData::addPeople(Graph* graph, Matrix* mat) {
+    Vertex *v=  graph->addPeopleVertex();
+    mat->changeValue(v);
+}
+
+void YoloData::addWeapon(Graph* graph, Matrix* mat) {
+    Vertex *v=  graph->addWeaponVertex();
+    mat->changeValue(v);
+}
+
+void YoloData::playHash(int index) {
+    if (index >= 0 && hashFunctions.size())
+        hashFunctions[index]();
+    else
+        cerr << "Error: Index out of range for hushFunctions" << endl;
+}
+
+void YoloData::isOpening() {
+    setFlag(true);
+}
+

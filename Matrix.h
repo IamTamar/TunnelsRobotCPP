@@ -3,6 +3,7 @@
 #include <vector>
 #define SIZE 10
 #include <iostream>
+#include <mutex>
 #include "Vertex.h"
 using namespace std;
 
@@ -17,7 +18,7 @@ public:
 	int rowNum = SIZE;
 	vector<float> Xdirections = { 0,-1,0,1,-1,1,-1,0,1 };//לכאורה צריך להגדיל את הטווח של הבדיקות מסביב
 	vector<float> Zdirections = { 0,-1,-1,-1,0,0,1,1,1 };
-
+	mutex mtxMat;
 public:
 	void initial();
 	void addRowUP(int num);
@@ -34,5 +35,18 @@ public:
 	void addPeopleVertex(Vertex* p);
 	void addWeaponVertex(Vertex* p);
 
+	void setMat(int i, int j, Vertex* p) {
+		// נעילת ה-mutex לפני ביצוע השינוי
+		std::lock_guard<std::mutex> lock(mtxMat);
+		mat[findZIndex(i)][findXIndex(j)] = p;  // שינוי הערך במטריצה
+	}
+
+	// פונקציה לקרוא ערך במיקום I/J במטריצה
+	Vertex* getMat(int i, int j)
+	{
+		// נעילת ה-mutex לפני קריאת הערך
+		std::lock_guard<std::mutex> lock(mtxMat);
+		return mat[findZIndex(i)][findXIndex(j)];
+	}
 
 };

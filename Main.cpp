@@ -24,7 +24,7 @@ void move() {
 	Matrix mat;
 	Lidar lidar;
 	stack <Vertex> turnsStack;
-	float mainAngel = -90, currnetAngel = -90;
+	float mainAngel = 90, currnetAngel = 90;
 	bool turnflag = 0;// דגל בשביל הקיר ממול
 	bool flag = true;//true- right side, false - left side
 	int counter;//num of turns that i changed directions
@@ -33,7 +33,7 @@ void move() {
 	vector<Point> lidarPointRL, lidarPointUD, rightSide, leftSide, UpSide;
 	pair<vector<Point>, vector<Point>> walls;
 	vector <float> avgsOfWalls;
-	Point door, p;
+	Point p, door;
 	float m0 = 0, m1, m2, angel, rightDist, leftDist;
 	Vertex* curr, * newCurr, * v, *last;
 	Eigen::Vector2d r;
@@ -63,8 +63,10 @@ void move() {
 		lidarPointRL = lidar.GetRightToLeftLidar(); //סריקה מימין לשמאל
 		m1 = lidar.filterFirstsForSlope(lidarPointRL); //חישוב שיפוע עכשוי של הקיר
 		angel = angelCalc(mainAngel, m1);// חישוב זווית של הקיר בין הקיר הקודם לעכשיו
-		if (!turnflag && angel < 0) angel += 180; //רק במקרה הזה פונה לשמאל
-
+		if (!turnflag && angel < 0) {  //רק במקרה הזה פונה לשמאל, ורק כעת צריך להוסיף את השיפוע לזוית הראשית. כי בפתח רגיל מוסיף שם
+			angel += 180; 	
+			mainAngel += angel;
+		} 
 		//m0 = m1;
 		turnTo( angel); //מסתובב לפי שיפוע הקיר
 		rightDist = lidar.rightDist();//מרחקים מהקירות
@@ -86,12 +88,12 @@ void move() {
 			soundSensors.getLeftLevels();
 			if (avgsOfWalls[0] > 30)  //אם העומקים שונים ביותר מ30 ס"מ כנראה יש חריגה
 			{
-				p = lidar.openOrDoor(lidarPointUD, avgsOfWalls[0]);//הגעה לנקודה שממנה מתחיל כיוון חדש
-				r = rotateVectorByAngle(0, p.getZ(), mainAngel);//הוספת 2 ס"מ כדי שיהיה בתחילת הפתח / דלת ולא לפני
+				Point point  = lidar.openOrDoor(lidarPointUD, avgsOfWalls[0]);//הגעה לנקודה שממנה מתחיל כיוון חדש
+				r = rotateVectorByAngle(0, point.getZ(), mainAngel);//הוספת 2 ס"מ כדי שיהיה בתחילת הפתח / דלת ולא לפני
 				curr = new Vertex(curr->getPoint().getX() + r(0), curr->getPoint().getY(), curr->getPoint().getZ() + r(1) + 2, curr->getAngel(), curr);
 				curr = graph.addVertex(curr);
 				mat.changeValue(curr);
-				goTo(p.getZ() + 2);//הליכה בפועל, לנקודה שבה הממוצעים משתנים
+				goTo(point.getZ() + 2);//הליכה בפועל, לנקודה שבה הממוצעים משתנים
 				
 				lidarPointUD = lidar.GetUpTDownLidar();
 				walls = lidar.wallsFilter(lidarPointUD, rightDist, leftDist);//מסנן את הקירות בלבד
@@ -106,20 +108,20 @@ void move() {
 				{//אם זו דלת ולא רק פתח!!
 					if (yd.getFlag() == true)//1-דלת
 					{
-						p = lidar.openOrDoor(lidarPointUD, avgsOfWalls[0]);
-						moveToOtherRoom(rightDist, p, -90, 0);
-						UpSide = lidar.GetUpLidar();
-						//האם להשאיר את הפונקציה הזו? או לעשות משהו יותר חכם
-						p = lidar.maxPoint(UpSide);//הנקודה המקסימלית בתקרה
+						Point p= lidar.openOrDoor(lidarPointUD, avgsOfWalls[0]);
 						r = rotateVectorByAngle(rightDist + p.getX(), 0, mainAngel);//להוסיף לX את רוחב הקיר שהלך בו באמצע המעבר לחדר השני
 						newCurr = new Vertex(curr->getPoint().getX() + r(0), p.getY(), curr->getPoint().getZ() + r(1), -90, curr);
 
-						if (mat.isVisited(newCurr->getPoint().getX(), newCurr->getPoint().getZ()) == -1)
+						if (mat.isVisited(newCurr->getPoint().getX(), newCurr->getPoint().getZ()) == -1)//לא ביקר שם עדיין
 						{
 							newCurr = graph.addVertex(newCurr);
+							moveToOtherRoom(rightDist, p.getX(), p.getY(), p.getZ(), -90, 0);//ההליכה בפועל
+							UpSide = lidar.GetUpLidar();
+							//האם להשאיר את הפונקציה הזו? או לעשות משהו יותר חכם
+							Point up = lidar.maxPoint(UpSide);//הנקודה המקסימלית בתקרה
+							goTo(up.getX(), up.getY(), up.getZ());
 							mat.changeValue(newCurr);
 							mainAngel += -90;//הרובוט מסתובב בדיוק לכיוון ההפוך- סה"כ הסתובב מהתחלת זיהוי הדלת: -180
-							m1 = m2;
 							curr = newCurr;
 							break;
 						}
@@ -132,26 +134,27 @@ void move() {
 					}
 					else
 					{
+					
 						//אם זה רק פתח/סיבוב רגיל
-						goTo(rightDist); //הולך ממש לפתח עצמו וסורק
+						goTo(rightDist); //הולך ממש לפתח עצמו לאחר שהסתובב לכיוונו -90 וסורק
 						lidarPointRL = lidar.GetRightToLeftLidar();
 						m2 = lidar.filterFirstsForSlope(lidarPointRL);//השיפוע החדש
 						angel = angelCalc(mainAngel, m2);// חישוב זווית של הקיר בין הקיר הקודם לעכשיו
 						if ( angel > 0)// בדיקה שלא יצאה זוית חיובית
 							angel -= 180;
 						turnTo(angel -currnetAngel);//מקודם כבר הסתובב -90 אז עכשיו נותר לו להסתובב ולהחזיר את הסיבוב ההוא כך שתהיה זוית חדשה שלמה 
-						if(mat.isVisited(curr->getPoint().getX(), curr->getPoint().getZ()) ==-1)
+						if(mat.isVisited(curr->getPoint().getX(), curr->getPoint().getZ()) ==-1)//לא ביקרו שם
 						{
 							curr->setAngel(angel);
 							curr->setStop(Stops::RIGHT);
-							r = rotateVectorByAngle(rightDist, 0, mainAngel);//
+							r = rotateVectorByAngle(rightDist, 0, mainAngel);
 							curr->setPoint(curr->getPoint().getX() + r(0), curr->getPoint().getY(), curr->getPoint().getZ() + r(1));
 							mainAngel += angel;
 							m1 = m2;
 							//curr = newCurr; אין  newCurr במקרה הזה
 							break;
 						}
-						else {
+						else {//ימשיך ולא ייכנס ללולאה
 							mainAngel -= (currnetAngel);//להחזיר את הסיבוב שנעשה
 							curr->setAngel(-currnetAngel);//מסתובב
 							turnTo(-currnetAngel);
@@ -185,9 +188,8 @@ void move() {
 			turnTo(curr->getAngel());
 			flag = true;// חזרה לימין 
 		}
-		//turnflag = 0;
+		turnflag = 0;
 	}
 	yoloThread.join();
-	//extractThread.join();
 	//mat.deleteMatrix();
 }

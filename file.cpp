@@ -43,21 +43,21 @@ File::File() {}
                     }
                 }
             }
-            std::cout << latestFolder << std::endl;
+             cout << latestFolder <<  endl;
 
         }
-        catch (const std::exception& e)
+        catch (const  exception& e)
         {
-            std::cerr << "An error occurred: " << e.what() << std::endl;
+             cerr << "An error occurred: " << e.what() <<  endl;
         }
         return latestFolder;
     }
 
 
-    std::string File::getLastCreatedFile(fs::path folderPath)
+     string File::getLastCreatedFile(fs::path folderPath)
     {
-        std::time_t latestTime = 0;
-        std::string latestFile;
+         time_t latestTime = 0;
+         string latestFile;
         try
         {
             for (const auto& entry : fs::directory_iterator(folderPath))
@@ -71,21 +71,21 @@ File::File() {}
                     }
                 }
             }
-            std::cout << latestFile << std::endl;
+             cout << latestFile <<  endl;
         }
-        catch (const std::exception& e)
+        catch (const  exception& e)
         {
-            std::cerr << "An error occurred: " << e.what() << std::endl;
+             cerr << "An error occurred: " << e.what() <<  endl;
         }
         return latestFile;
     }
 
     //קורא מקובץ לוקטור נקודות
-    vector<Point> File::fileToCoordinatesVector(const std::string& predictionFilePath) {
+    vector<Point> File::fileToCoordinatesVector(const string& predictionFilePath) {
         ifstream file(predictionFilePath);
         vector<Point> v; 
         if (!file.is_open()) {
-            std::cerr << "Error: Unable to open file: " << predictionFilePath << std::endl;
+            cerr << "Error: Unable to open file: " << predictionFilePath <<  endl;
             return v; // החזרת וקטור ריק במקרה של כשל בפתיחת קובץ
         }
         string line;
@@ -94,7 +94,7 @@ File::File() {}
             float x, y, z;
 
             if (!(iss >> x >> y >> z)) {
-                std::cerr << "Warning: Skipping illegal line in " << predictionFilePath << ": " << line << std::endl;
+                 cerr << "Warning: Skipping illegal line in " << predictionFilePath << ": " << line <<  endl;
                 continue;
             }
 

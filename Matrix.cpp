@@ -68,14 +68,18 @@ int Matrix::findZIndex(int z) {
 }
 //
 
-void Matrix::changeValue( Vertex* p) {
+void Matrix::changeValue( Vertex* p) 
+{
 	// אם אין עדיין מצביע באותו מקום, ניצור חדש
 	int indZ = int(round(p->getPoint().getZ())), indX = int(round(p->getPoint().getX()));
-	if (mat[findZIndex(indZ)][findXIndex(indX)] == nullptr) {
-		mat[findZIndex(indZ)][findXIndex(indX)] = new Vertex(*p); // משכפלת את הערך של p
+
+	if (getMat(indZ, indX))
+	{
+		setMat(indZ,indX,new Vertex(p)); // משכפלת את הערך של p
 	}
-	else {
-		*(mat[findZIndex(indZ)][findXIndex(indX)]) = *p; // משנה את הערך הקיים
+	else 
+	{
+		setMat(indZ, indX, p); // משנה את הערך הקיים
 	}
 }
 float Matrix::isVisited(float x, float z) {//פונקציה המשתמשת בוקטור כיוונים
@@ -90,18 +94,26 @@ float Matrix::isVisited(float x, float z) {//פונקציה המשתמשת בוקטור כיוונים
 	return -1;
 }
 
-void Matrix::printMat() {//לבדוק שהתנאים טובים ולא סיבוכיות גדולה מידי!
+void Matrix::printMat() {
 	for (int i = rowNum - 1; i >= 0; i--) {
 		cout << "\n";
 		for (int j = colNum - 1; j >= 0; j--) {
 			Vertex* v = mat[i][j];
 			if (v != nullptr) {
 				if (j == posX && i == posZ) {
-					cout << "\033[1;33m**\033[0m"; // צהוב
+					cout << "\033[1;31m**\033[0m"; // RED
 				}
-				else
+				if(v->getStop()== Stops::KIDNAPPED || v->getStop() == Stops::TERRORIST)
 				{
-					cout << "\033[1;31m[]\033[0m";
+					cout << "\033[1;32m[]\033[0m";// GREEN
+				}
+				if(v->getStop()== Stops::EXPLOSIVES)
+				{
+					cout << "\033[1;34m[]\033[0m";// BLUE
+				}
+				if(v->getStop()== Stops::LEFT || v->getStop() == Stops::RIGHT)
+				{
+					cout << "\033[1;33m[]\033[0m";// YELLOW	
 				}
 			}
 			else

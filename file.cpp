@@ -81,25 +81,26 @@ File::File() {}
     }
 
     //קורא מקובץ לוקטור נקודות
-    vector<Point> File::fileToCoordinatesVector(const string& predictionFilePath) {
-        ifstream file(predictionFilePath);
-        vector<Point> v; 
-        if (!file.is_open()) {
-            cerr << "Error: Unable to open file: " << predictionFilePath <<  endl;
-            return v; // החזרת וקטור ריק במקרה של כשל בפתיחת קובץ
-        }
-        string line;
-        while (getline(file, line)) {
-            istringstream iss(line);//יוצר שורה ןמחלץ ממנה את 3 הנתונים
-            float x, y, z;
+     vector<Point> File::fileToCoordinatesVector(const string& predictionFilePath) {
+         vector<Point> v;  // וקטור סטטי, שיישאר בתוקף לאחר סיום הפונקציה
+         //v.clear();  // לא מתחילים עם וקטור ישן
+         ifstream file(predictionFilePath);
+         if (!file.is_open()) {
+             cerr << "Error: Unable to open file: " << predictionFilePath << endl;
+             return v; // החזרת הפניה לוקטור ריק במקרה של כשל בפתיחת קובץ
+         }
 
-            if (!(iss >> x >> y >> z)) {
-                 cerr << "Warning: Skipping illegal line in " << predictionFilePath << ": " << line <<  endl;
-                continue;
-            }
+         string line;
+         while (getline(file, line)) {
+             istringstream iss(line); // יוצר שורה ומחלץ ממנה את 3 הנתונים
+             float x, y, z;
 
-            // יצירה יעילה יותר של אובייקט Point והוספתו לוקטור
-            v.emplace_back(x, y, z);
-        }
-        return v;
-    }
+             if (!(iss >> x >> y >> z)) {
+                 cerr << "Warning: Skipping illegal line in " << predictionFilePath << ": " << line << endl;
+                 continue;
+             }
+             v.emplace_back(x, y, z);
+         }
+
+         return v;  // מחזיר הפנייה לוקטור
+     }

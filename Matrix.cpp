@@ -142,7 +142,7 @@ void Matrix::addPeopleVertex(Vertex *p) {
 	this->changeValue(p);
 }
 
-void Matrix::addWeaponVertex(Vertex *p) {//כרגע אין התייחסות לדריסת קודקודים אחרים
+void Matrix::addWeaponVertex(Vertex *p) {
 	this->changeValue(p);
 }
 

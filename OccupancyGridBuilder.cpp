@@ -4,7 +4,6 @@
 #include <queue>    // עבור BFS ב-inflateObstacles
 #include <vector>
 
-
 using namespace std;
 OccupancyGridBuilder::OccupancyGridBuilder(double octreeResolution,
     double grid2DResolution,
@@ -16,14 +15,14 @@ OccupancyGridBuilder::OccupancyGridBuilder(double octreeResolution,
     minYObstacle_(minYObstacle),
     maxYObstacle_(maxYObstacle)
 {
-    // חישוב רדיוס הניפוח ביחידות של תאי גריד
+    // חישוב רדיוס הניפוח ביחידות של תאי גריד עי חלוקת הרדיוס חלקי הרזולוציה של הגריד
     inflationRadiusCells_ = static_cast<int>(robotRadiusM / grid2DResolution_) + 1;
 
     // אתחול גבולות המפה לערכים שאינם חוקיים (או מינימום/מקסימום)
     mapBounds_ = {
-        numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
-        numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
-        numeric_limits<double>::max(), std::numeric_limits<double>::lowest()
+        numeric_limits<double>::max(), numeric_limits<double>::lowest(),
+        numeric_limits<double>::max(), numeric_limits<double>::lowest(),
+        numeric_limits<double>::max(), numeric_limits<double>::lowest()
     };
 }
 
@@ -48,13 +47,13 @@ OccupancyGridBuilder::MapBounds OccupancyGridBuilder::findPointCloudBounds(const
     return bounds;
 }
 
-// פונקציה לניפוח מכשולים על גבי הגריד הדו-ממדי (יישום פשוט באמצעות BFS)
+// פונקציה לניפוח מכשולים על גבי הגריד הדו-ממדי BFS)
 void OccupancyGridBuilder::inflateObstacles(OccupancyGrid& grid, int inflationRadius) {
     int gridWidth = grid.size();
     if (gridWidth == 0) return;
     int gridHeight = grid[0].size();
 
-    OccupancyGrid inflatedGrid = grid; // העתק את הגריד המקורי
+    OccupancyGrid inflatedGrid = grid; // מעתיק את הגריד המקורי
     std::queue<std::pair<int, int>> q;
 
     // אתחול התור עם כל תאי המכשול המקוריים
@@ -64,7 +63,7 @@ void OccupancyGridBuilder::inflateObstacles(OccupancyGrid& grid, int inflationRa
                 q.push({ i, j });
                 // אם כבר סומן כחסימה או ניפוח, אל תחזיר אחורה
                 if (inflatedGrid[i][j] != 1 && inflatedGrid[i][j] != 2) {
-                    inflatedGrid[i][j] = 1; // ודא שהוא מסומן כמכשול
+                    inflatedGrid[i][j] = 1; // מודא שהוא מסומן כמכשול
                 }
             }
         }
@@ -73,7 +72,7 @@ void OccupancyGridBuilder::inflateObstacles(OccupancyGrid& grid, int inflationRa
     // BFS לניפוח
     // ההבדל מ-BFS רגיל: כאן אנחנו "סופרים" את רדיוס הניפוח
     // נוצרת כאן מפת "מרחקים" מהמכשולים
-    vector<std::vector<int>> dist(gridWidth, std::vector<int>(gridHeight, -1));
+    vector<vector<int>> dist(gridWidth, vector<int>(gridHeight, -1));
 
     while (!q.empty()) {
         std::pair<int, int> current = q.front();
@@ -81,36 +80,35 @@ void OccupancyGridBuilder::inflateObstacles(OccupancyGrid& grid, int inflationRa
         int cx = current.first;
         int cz = current.second;
 
-        // בדוק את 8 השכנים (כולל אלכסונים)
         for (int dx = -1; dx <= 1; ++dx) {
             for (int dz = -1; dz <= 1; ++dz) {
-                if (dx == 0 && dz == 0) continue; // אל תבדוק את התא הנוכחי
+                if (dx == 0 && dz == 0) continue; // לא לבדוק את התא הנוכחי
 
                 int nx = cx + dx;
                 int nz = cz + dz;
 
-                // ודא שהשכן בתוך גבולות הגריד
+                // לודא שהשכן בתוך גבולות הגריד
                 if (nx >= 0 && nx < gridWidth && nz >= 0 && nz < gridHeight) {
                     // אם עדיין לא ביקרנו בתא זה (dist[nx][nz] == -1)
                     if (dist[nx][nz] == -1) {
                         dist[nx][nz] = dist[cx][cz] + 1;
                         if (dist[nx][nz] <= inflationRadius) {
-                            inflatedGrid[nx][nz] = 2; // סמן כתא מנופח/חסימה
-                            q.push({ nx, nz }); // המשך את ה-BFS
+                            inflatedGrid[nx][nz] = 2; // מסמן כתא מנופח/חסימה
+                            q.push({ nx, nz }); 
                         }
                     }
                 }
             }
         }
     }
-    grid = inflatedGrid; // עדכן את הגריד המקורי עם הניפוח
+    grid = inflatedGrid; // מעדכן את הגריד המקורי עם הניפוח
 }
 
 // פונקציה לבניית מפת התפוסה
 OccupancyGridBuilder::OccupancyGrid OccupancyGridBuilder::buildOccupancyGrid(const pcl::PointCloud<PointT>::Ptr& cloud) {
     if (!cloud || cloud->empty()) {
         cerr << "Input cloud is empty or null." << std::endl;
-        return {}; // החזר גריד ריק
+        return {}; // מחזיר גריד ריק
     }
 
     // 1. מציאת גבולות ענן הנקודות
@@ -147,9 +145,8 @@ OccupancyGridBuilder::OccupancyGrid OccupancyGridBuilder::buildOccupancyGrid(con
             int gx = static_cast<int>((voxelCenter.x - mapBounds_.minX) / grid2DResolution_);
             int gz = static_cast<int>((voxelCenter.z - mapBounds_.minZ) / grid2DResolution_);
 
-            // וודא שהתא בתוך גבולות הגריד
+            // מוודא שהתא בתוך גבולות הגריד
             if (gx >= 0 && gx < gridWidth && gz >= 0 && gz < gridHeight) {
-                // סמן כתפוס (1) רק אם הוא עדיין לא סומן ככזה (כדי למנוע דריסה מיותרת)
                 if (occupancyGrid2D[gx][gz] == 0) {
                     occupancyGrid2D[gx][gz] = 1;
                 }

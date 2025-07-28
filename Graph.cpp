@@ -10,10 +10,9 @@ Vertex* Graph::addVertex(Vertex* newV) {
     //if (v->getPrev() != nullptr) 
         v->getPrev()->addNext(v); // הוספה לרשימת ה-next של הקודם    
         SetLast(v);
+        v->printVertex();
     return v;
 }
-
-
 
 void Graph::printGraph() const {
     for (Vertex* v : vertice) {
@@ -33,6 +32,8 @@ Vertex* Graph::addPeopleVertex() {
         this->getLast()->getPoint().getZ() +1,
         this->getLast()->getAngel(), this->getLast());
     v->setStop(Stops::TERRORIST);
+    cout << "stop: TERRORIST " << endl;
+
     this->addVertex(v);
     return v;
 }
@@ -43,6 +44,8 @@ Vertex* Graph::addWeaponVertex() {
         this->getLast()->getPoint().getZ() + 1,
         this->getLast()->getAngel(), this->getLast());
         v->setStop(Stops::EXPLOSIVES);
+        cout << "stop: EXPLOSIVES " << endl;
+
         this->addVertex(v);
         return v;
 }

@@ -10,10 +10,9 @@
 //#include <cmath>
 
 using namespace std;
-static float calcSlope(Point p1, Point p2) {
+static float calcSlope(Point& p1, Point& p2) {
 	float deltaX = p2.getX() - p1.getX();
 	float deltaZ = p2.getZ() - p1.getZ();
-
 	if (deltaX == 0) {
 		// קו אנכי - שיפוע אינסופי
 		return std::numeric_limits<float>::infinity();
@@ -89,15 +88,9 @@ static Eigen::Vector2d rotateVectorByAngle(float x, float z, float theta_degrees
 	Eigen::Vector2d v(x, z);//יצירת וקטור הנקודה
 
 	if (theta_degrees >= 0) {
-		R << cos(theta_rad), sin(theta_rad),
-			-sin(theta_rad), cos(theta_rad);
-	}
-	/*else
-	{
 		R << cos(theta_rad), -sin(theta_rad),
 			sin(theta_rad), cos(theta_rad);
-	}*/
-
+	}
 	return R * v;//הכפלת וקטור במטריצה מביאה לנקודות הסופיות
 }
 

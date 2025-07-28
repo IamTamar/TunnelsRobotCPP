@@ -12,7 +12,7 @@ using namespace std;
 File f;
 
  vector<Point> Lidar::GetUpTDownLidar() {
-	float angel = 180;
+	float angel = 360;
 
 	//lidar performance:
 	// up to down on right, and keeps going to buttom and down to up in left
@@ -25,16 +25,16 @@ File f;
 	//  right near robot, and keeps going in front and left until near robot
 	// writing into file
 	//reading and moving into vector<vertex>
-	return f.fileToCoordinatesVector("");
+	return f.fileToCoordinatesVector("C:\\Users\\PC\\Downloads\\TunnelsRobot\\src\\coordinatesRightToLeft.txt");
 
  }
  vector<Point> Lidar::GetWallInFront() {//לשנות את הפונקציה!
-	return f.fileToCoordinatesVector("");
+	return f.fileToCoordinatesVector("C:\\Users\\PC\\Downloads\\TunnelsRobot\\src\\coordinatesRightToLeftWallInFront.txt");
 
  }
  vector<Point> Lidar::GetUpLidar() {
 	//looks up
-	return f.fileToCoordinatesVector("");
+	return f.fileToCoordinatesVector("C:\\Users\\PC\\Downloads\\TunnelsRobot\\src\\coordinatesRightToLeft.txt");
 
  }
 float Lidar::rightDist() { //for distances between walls
@@ -80,7 +80,7 @@ pair<vector<Point>, vector<Point>> Lidar::wallsFilter(vector<Point>& v, float ri
 	return { right, left };
 }
 
-Point Lidar::maxPoint(const vector<Point>& v) {
+void Lidar::maxPoint(const vector<Point>& v,Point& p) {
 	if (v.empty()) {
 		throw runtime_error("Vector 'v' is empty in maxPoint; cannot find max point.");
 	}
@@ -92,7 +92,9 @@ Point Lidar::maxPoint(const vector<Point>& v) {
 			maxIndex = i;
 		}
 	}
-	return Point(v[maxIndex].getX(), v[maxIndex].getY(), v[maxIndex].getZ());
+	p.changeX(v[maxIndex].getX());
+	p.changeY(v[maxIndex].getY());
+	p.changeZ(v[maxIndex].getZ());
 }
 //z=mx+b
 //מסנן את הקיר הקודם שהייתי בו כדי שאדע מה הקיר החדש 
@@ -186,7 +188,7 @@ bool Lidar::wallInFront(const vector<Point>& v)
 	return false;
 }
 
-Point Lidar::openOrDoor(std::vector<Point>& v, float avg) { 
+void Lidar::openOrDoor(std::vector<Point>& v, float avg, Point& p) { 
 	if (v.empty()) {
 		throw runtime_error("Vector 'v' is empty in openOrDoor.");
 	}
@@ -197,7 +199,10 @@ Point Lidar::openOrDoor(std::vector<Point>& v, float avg) {
 	}
 	int target_index = (i == v.size()) ? v.size() - 1 : i - 1;
    // move מאפשר ליצור אוביקט חדש ולהחזיר אותו בלי להגביל לקבוע
-	return Point(v.at(target_index).getX(), v.at(target_index).getY(), v.at(target_index).getZ());
+	p.changeX(v.at(target_index).getX());
+	p.changeY(v.at(target_index).getY());
+	p.changeZ(v.at(target_index).getZ());
+	//return Point(v.at(target_index).getX(), v.at(target_index).getY(), v.at(target_index).getZ());
 }
 
 

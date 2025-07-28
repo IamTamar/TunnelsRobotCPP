@@ -12,7 +12,6 @@
 #include "file.h"
 #include "Matrix.h"
 #include <thread>
-using namespace std;
 #include <iostream>
 #include <string>
 #include <set>
@@ -21,6 +20,8 @@ using namespace std;
 #include <vector>
 #include <string>
 #include <filesystem>
+using namespace std;
+
 namespace fs = std::filesystem;
 
 YoloData::YoloData(Graph* graph, Matrix* mat)
@@ -40,94 +41,41 @@ vector<int> YoloData::runYoloPrediction(const string& FilePath) {
     string pythonExe = "C:\\Users\\PC\\Desktop\\python\\env\\Scripts\\python.exe";
     string scriptPath = "C:\\Users\\PC\\Desktop\\python\\givenFromYolo.py";
     string command = pythonExe + " " + scriptPath + " " + FilePath;
-
-
-    // הצגת הפקודה
-    cout << "הפקודה שהורכבה: " << command << endl;
     int result = system(command.c_str());
-    this_thread::sleep_for(chrono::milliseconds(50)); // כדי שיספיק לכתוב לקובץ
 
     vector<int> classIDs;
-    if (result != 0) {//קוד 0- הצלחה
+    if (result != 0) { // קוד 0 = הצלחה
         cerr << "Error running Python script!" << endl;
         return classIDs;
     }
     // יוצר את שם הקובץ מהתמונה
     string baseName = getBaseFilename(FilePath);
-    string outputFile = "yolo_classes_" + baseName + ".txt";
+    string outputFile = string("C:\\Users\\PC\\Downloads\\TunnelsRobot\\src\\yoloLabels\\yolo_classes_" + baseName + ".txt");
+
     ifstream infile(outputFile);
     if (!infile) {
         cerr << "Could not open result file: " << outputFile << endl;
         return classIDs;
-    }    
+    }
     set<int> uniqueClasses;
     int cls;
     while (infile >> cls) {
         uniqueClasses.insert(cls);
     }
-    // מעתיק את הקלאסים הייחודיים לתוך וקטור
     classIDs.assign(uniqueClasses.begin(), uniqueClasses.end());
     return classIDs;
 }
-//bool YoloData::hasClassInPrediction(const string& predictionFilePath, int targetClassId) {
-//    File f;
-//    ifstream file(predictionFilePath);
-//    if (!file.is_open()) {
-//        cerr << "error: " << predictionFilePath << endl;
-//        return false;
-//    }
-//    string line;
-//    while (getline(file, line)) {
-//        istringstream iss(line);
-//        int classId;
-//        float  x, y, w, h;
-//
-//        if (!(iss >> classId  >> x >> y >> w >> h)) {
-//            cerr << "ilegal line: " << line << endl;
-//            continue;
-//        }
-//
-//        // הדפסה לבדיקה
-//        std::cout << "class: " << classId << 
-//             ", center: (" << x << ", " << y << "), size: (" << w << ", " << h << ")\n";
-//
-//        if (classId == targetClassId /* && conf >= 0.5 */) {
-//            return true; // זיהוי נמצא
-//        }
-//    }
-//
-//    return false; // לא נמצא
-//}
-
-void YoloData::runYolo()
-{
-    std::wstring batchFilePath = L"C:\\Users\\PC\\Downloads\\yolo\\my_yolov8_model2\\content\\runs\\detect\\my_yolov8_model2\\CMD.bat.txt";
-
-    // Build the command to run the batch file
-    std::wstring fullCommand = L"\"";
-    fullCommand += batchFilePath;
-    fullCommand += L"\"";
-
-    // Execute the command to run the batch file
-    _wsystem(fullCommand.c_str());
-}
-
 void YoloData::processDirectoryAndReadFiles(Graph* graph, Matrix* mat) {
     File f;
-    
-    /*fs::path latest_run_folder_path(f.getLastCreatedFolder());
-    fs::path target_labels_path = latest_run_folder_path / "labels";*/
     string latest_file_str;
-    setonyolo(1);
-    while (Getonyolo()==1) 
-    {
-
-        latest_file_str = f.getLastCreatedFile("C:\\Users\\PC\\Downloads\\TunnelsRobot\\yoloRuns");
-        if (latest_file_str.empty()) {
-            // אם getLastCreatedFile מחזירה מחרוזת ריקה, זה אומר שאין יותר קבצים לטיפול
-            std::cout << "לא נמצאו קבצים נוספים לטיפול. סיום טיפול." << std::endl;
-            break; // יציאה מהלולאה
-        }
+    latest_file_str = f.getLastCreatedFile("C:\\Users\\PC\\Downloads\\TunnelsRobot\\src\\yoloRuns");
+    if (latest_file_str.empty()) {
+        // אם getLastCreatedFile מחזירה מחרוזת ריקה, זה אומר שאין יותר קבצים לטיפול
+        cout << "files not found." << std::endl;
+        setonyolo(false);
+    }
+    while (Getonyolo()==true) {
+        setonyolo(true);
         fs::path latest_file_path(latest_file_str);
         // וידוא שהקובץ עדיין קיים לפני שמנסים לקרוא אותו 
         if (!fs::exists(latest_file_path)) {
@@ -139,29 +87,24 @@ void YoloData::processDirectoryAndReadFiles(Graph* graph, Matrix* mat) {
             continue;
         }
         // קוראים את תוכן הקובץ האחרון שנוצר
-        setFlag(false);
-       
         this->classes = this->runYoloPrediction(latest_file_str);
-        string baseName = getBaseFilename(latest_file_str);
-        string output_text_file = "yolo_classes_" + baseName + ".txt";
+
         for (int index : this->classes) {
             this->playHash(index);
         }
-        //  מחיקת הקובץ לאחר הטיפול בו 
-        try {
-            fs::remove(latest_file_path);
-            fs::remove(output_text_file);
 
-        }
-        catch (const fs::filesystem_error& e) {
-            std::cerr << "fatal error - file erasing " << latest_file_path << ": " << e.what() << std::endl;
-            break;
-        }
         // השהייה קצרה כאן 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        latest_file_str = f.getLastCreatedFile("C:\\Users\\PC\\Downloads\\TunnelsRobot\\src\\yoloRuns");
+        if (latest_file_str.empty()) {
+            // אם getLastCreatedFile מחזירה מחרוזת ריקה, זה אומר שאין יותר קבצים לטיפול
+            std::cout << "files not found." << std::endl;
+            setonyolo(false);
+        }
     }
 }
-int YoloData::Getonyolo()
+
+bool YoloData::Getonyolo()
 {
     std::lock_guard<std::mutex> lock(mtxOnYolo);  // סנכרון של גישה עם lock_guard
     return onyolo;
@@ -181,11 +124,19 @@ void YoloData::addWeapon(Graph* graph, Matrix* mat) {
     mat->changeValue(v);
 }
 
+#include <stdexcept>
 void YoloData::playHash(int index) {
-    if (index >= 0 && hashFunctions.size())
-        hashFunctions[index]();
-    else
-        cerr << "Error: Index out of range for hushFunctions" << endl;
+    if (index >= 0 && index < hashFunctions.size()) {
+        if (hashFunctions[index]) {
+            hashFunctions[index]();
+        }
+        else {
+            throw std::runtime_error("Error: Attempted to call an empty std::function at the specified index.");
+        }
+    }
+    else {
+        throw std::out_of_range("Error: Index out of range for hashFunctions in playHash.");
+    }
 }
 
 void YoloData::isOpening() {

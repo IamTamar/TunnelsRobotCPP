@@ -8,13 +8,30 @@
 #include <unordered_set>
 #include <unordered_map>
 #include "OccupancyGridBuilder.h"
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 using namespace std;
+
 #define ROW 9
 #define COL 10
 // Creating a shortcut for int, int pair type
 typedef pair<int, int> Pair;
 // Creating a shortcut for pair<int, pair<int, int>> type
 typedef pair<double, pair<int, int> > pPair;
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
+
+OccupancyGridBuilder gridBuilder(
+    0.05,    // octree resolution (מטר)
+    0.1,     // grid 2D resolution (מטר)
+    0.0,     // min Y obstacle (גובה מינימלי)
+    0.5,     // max Y obstacle (גובה מקסימלי)
+    0.3      // robot radius (מטר)
+);
+
+auto occupancyGrid = gridBuilder.buildOccupancyGrid(cloud);//בניית האוקטרי והגריד
+
+auto bounds = gridBuilder.getMapBounds();
 
 // A structure to hold the necessary parameters
 struct cell {
@@ -610,7 +627,6 @@ static void aStarSearch(int grid[][COL], Pair src, Pair dest)
     return;
 }
 
-// Driver program to test above function
 //int main()
 //{
 //    /* Description of the Grid-
